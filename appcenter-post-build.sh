@@ -1,16 +1,6 @@
-if [ "$AGENT_JOBSTATUS" == "Succeeded" ]; then
-    HOCKEYAPP_API_TOKEN={API_Token}
-    HOCKEYAPP_APP_ID={APP_ID}
-
-    # Example: Upload main branch app binary to HockeyApp using the API
-    if [ "$APPCENTER_BRANCH" == "main" ];
-     then
-        curl \
-        -F "status=2" \
-        -F "ipa=@$APPCENTER_OUTPUT_DIRECTORY/MyApps.ipa" \
-        -H "X-HockeyAppToken: $HOCKEYAPP_API_TOKEN" \
-        https://rink.hockeyapp.net/api/2/apps/$HOCKEYAPP_APP_ID/app_versions/upload
-    else
-        echo "Current branch is $APPCENTER_BRANCH"
-    fi
-fi
+brew tap veracode/tap
+brew install gen-ir
+carthage update --use-xcframeworks --platform iOS
+xcodebuild archive -project Nextcloud.xcodeproj  -configuration Debug -scheme Nextcloud -destination generic/platform=iOS DEBUG_INFORMATION_FORMAT=dwarf-with-dsym -archivePath Nextcloud.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ENABLE_BITCODE=NO | tee build_log.txt
+gen-ir build_log.txt Nextcloud.xcarchive/IR
+zip -r Nextcloud.zip Nextcloud.xcarchive
